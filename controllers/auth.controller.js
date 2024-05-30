@@ -30,9 +30,12 @@ authController.loginWithEmail = async (req, res) => {
 
 authController.authenticate = async (req, res, next) => {
   try {
+    // headers.authorization 에 있는 token 값을 불러온다
     const tokenString = req.headers.authorization
     if (!tokenString) throw new Error('Token not found')
+    // token에서 불필요한 Bearer를 없애준다
     const token = tokenString.replace("Bearer ", "");
+    // jwt.verify 함수를 통해 token 와 JWT_SECRET_KEY 이 유효한지 확인
     jwt.verify(token, JWT_SECRET_KEY, (error, payload)=>{
       if (error) throw new Error('Invalid token')
       req.userId = payload._id;

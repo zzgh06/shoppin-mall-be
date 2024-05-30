@@ -25,15 +25,18 @@ userController.createUser = async (req, res) => {
 
 userController.getUser = async (req, res) => {
   try {
-    const userId = req.userId
+    // authController.authenticate 미들웨어를 통해 넘어온 req.userId로 user를 찾는다
+    const userId = req.userId;
     const user = await User.findById(userId);
-    if(user) {
-      res.status(200).json({status:'success', user})
+    if (user) {
+      return res.status(200).json({ status: 'success', user });
     }
-    throw new Error('can not find user')
-  } catch(error) {
-    res.status(400).json({status:'error', error : error.message})
+    // user가 없을 때 에러 던지기
+    throw new Error('Can not find user');
+  } catch (error) {
+    res.status(400).json({status : "fail", message : error.message})
   }
-}
+};
+
 
 module.exports = userController
