@@ -33,13 +33,13 @@ userSchema.methods.toJSON = function () {
   return obj
 }
 
-userSchema.methods.generatorToken = function () {
+userSchema.methods.generateToken = function (){
   // jwt.sign(payload, secretOrPrivateKey, [옵션, 콜백])
   // payload 와 secretOrPrivateKey 를 조합해서 토큰 값 생성
-  const token = jwt.sign({_id : this._id}, JWT_SECRET_KEY, {
-    expiresIn : 'id'
-  })
-  return token
+  const token = jwt.sign({ _id: this._id }, JWT_SECRET_KEY, {
+    expiresIn:'1d'
+  });
+  return token;
 }
 
 
