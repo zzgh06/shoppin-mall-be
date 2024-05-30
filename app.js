@@ -12,9 +12,10 @@ app.use(bodyParser.json())
 
 app.use('/api', indexRouter)
 
-const mongoURI = process.env.LOCAL_DB_ADDRESS;
+const MONGODB_URI_PROD = process.env.MONGODB_URI_PROD;
+const mongoURI = MONGODB_URI_PROD;
 
-mongoose.connect(mongoURI, {useNewUrlParser:true})
+mongoose.connect(mongoURI)
   .then(()=>console.log("mongoose connected"))
   .catch((err)=>console.log("DB connection fail", err))
 
