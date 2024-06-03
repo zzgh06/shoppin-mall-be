@@ -1,17 +1,18 @@
 const jwt = require('jsonwebtoken')
-const User = require("../models/User");
 const bcrypt = require('bcryptjs');
+const User = require('../models/User');
 require("dotenv").config();
 const JWT_SECRET_KEY=process.env.JWT_SECRET_KEY
 
 const authController = {};
 
-
+// 로그인
 authController.loginWithEmail = async (req, res) => {
   try {
     const { email, password } = req.body;
     // 유저정보가 데이터베이스에 있는지 확인
     let user = await User.findOne({email}, "-createdAt -updatedAt -__v")
+    // console.log(user)
     if (user) {
       // 입력한 패스워드와 데이터베이스에 있는 패스워드가 일치하는지 확인
       const isMatch = await bcrypt.compareSync(password, user.password);
@@ -28,6 +29,7 @@ authController.loginWithEmail = async (req, res) => {
   }
 }
 
+// 계정 확인
 authController.authenticate = async (req, res, next) => {
   try {
     // headers.authorization 에 있는 token 값을 불러온다
@@ -40,8 +42,21 @@ authController.authenticate = async (req, res, next) => {
       if (error) throw new Error('Invalid token')
       req.userId = payload._id;
     });
-    next()
+    next();
   } catch(error) {
+    res.status(400).json({status : 'fail', error : error.message})
+  }
+}
+
+// 관리자 권한 확인
+authController.checkAdminPermission = async (req, res, next) => {
+  try {
+    // authController.authenticate 에서 가져온 token 값을 미들웨어를 통해 가져온다
+    const userId = req.userId;
+    const user = await User.findById(userId)
+    if(user.level !== "admin") throw new Error('no permission')
+    next();
+  } catch (error) {
     res.status(400).json({status : 'fail', error : error.message})
   }
 }

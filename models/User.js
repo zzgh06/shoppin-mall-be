@@ -33,15 +33,14 @@ userSchema.methods.toJSON = function () {
   return obj
 }
 
+// jwt.sign(payload, secretOrPrivateKey, [옵션, 콜백])
+// payload 와 secretOrPrivateKey 를 조합해서 토큰 값 생성
 userSchema.methods.generateToken = function (){
-  // jwt.sign(payload, secretOrPrivateKey, [옵션, 콜백])
-  // payload 와 secretOrPrivateKey 를 조합해서 토큰 값 생성
   const token = jwt.sign({ _id: this._id }, JWT_SECRET_KEY, {
     expiresIn:'1d'
   });
   return token;
 }
-
 
 const User = mongoose.model("User", userSchema)
 module.exports = User;
