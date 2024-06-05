@@ -1,5 +1,5 @@
 const Product = require("../models/Product");
-const PAGE_SIZE = 1;
+const PAGE_SIZE = 5;
 const productController = {};
 productController.createProduct = async (req, res) => {
   try {
@@ -46,5 +46,24 @@ productController.getProducts = async (req, res) => {
     res.status(400).json({ status : 'fail', error : error.message });
   }
 };
+
+productController.updateProduct = async (req, res)=>{
+  try {
+    // 수정할 상품의 id 깂
+    const productId = req.params.id;
+    const {sku, name, image, category, description, price, stock, status} = req.body;
+    // id 값과 일치하는 상품
+    // 수정할 내용,
+    // 업데이트한 후 새로운 값 리턴하는 옵션 => { new : true }
+    const product = await Product.findByIdAndUpdate(
+      { _id:productId }, 
+      { sku, name, image, category, description, price, stock, status },
+      { new : true }
+    );
+    res.status(200).json({ status : 'success', data : product });
+  } catch(error){
+    res.status(400).json({ status : 'fail', error : error.message });
+  }
+}
 
 module.exports = productController
