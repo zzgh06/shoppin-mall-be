@@ -24,7 +24,11 @@ productController.createProduct = async (req, res) => {
 productController.getProducts = async (req, res) => {
   try {
     const { page, name } = req.query
-    const cond = name ? {name:{$regex:name, $options:"i"}} : {};
+    // console.log(name)
+    // isDeleted 에 따라 보여주는 결과가 다름
+    const cond = name 
+    ? { name: { $regex: name, $options: "i" }, isDeleted: false }
+    : { isDeleted: false };
     // 선언
     let query = Product.find(cond);
     // 페이지 혹은 조건에 따라서 response로 전달할 데이터를 동적으로 변경
@@ -61,6 +65,21 @@ productController.updateProduct = async (req, res)=>{
       { new : true }
     );
     res.status(200).json({ status : 'success', data : product });
+  } catch(error){
+    res.status(400).json({ status : 'fail', error : error.message });
+  }
+}
+
+// 삭제(isDeleted : true) 변경, 실제로 삭제 X
+// isDeleted bool 에 따라 보여주는 item 변경
+productController.deleteProduct = async (req, res) => {
+  try {
+    const productId = req.params.id;
+    const product = await Product.findByIdAndUpdate(
+      { _id:productId },
+      { isDeleted: true }
+    );
+    res.status(200).json({ status : 'success' });
   } catch(error){
     res.status(400).json({ status : 'fail', error : error.message });
   }
