@@ -14,6 +14,9 @@ router.post(
 // 상품 보여주기
 router.get('/', productController.getProducts)
 
+// 상품 디테일
+router.get('/:id', productController.getProductById);
+
 // 상품 수정하기
 router.put(
   '/:id', 

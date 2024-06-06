@@ -51,9 +51,19 @@ productController.getProducts = async (req, res) => {
   }
 };
 
-productController.updateProduct = async (req, res)=>{
+productController.getProductById = async (req,res) => {
   try {
-    // 수정할 상품의 id 깂
+    const productId = req.params.id;
+    const product = await Product.findById(productId)
+    res.status(200).json({ status : 'success', data : product });
+  } catch(error) {
+    res.status(400).json({ status : 'fail', error : error.message });
+  }
+}
+
+productController.updateProduct = async (req, res) => {
+  try {
+    // 수정할 상품의 id 값
     const productId = req.params.id;
     const {sku, name, image, category, description, price, stock, status} = req.body;
     // id 값과 일치하는 상품
