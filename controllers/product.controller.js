@@ -3,11 +3,11 @@ const PAGE_SIZE = 5;
 const productController = {};
 productController.createProduct = async (req, res) => {
   try {
-    const { sku, name, image, category, description, price, stock, status } = req.body;
+    const { sku, name, images, category, description, price, stock, status } = req.body;
     const product = new Product({
       sku, 
       name, 
-      image, 
+      images, 
       category, 
       description, 
       price, 
@@ -65,13 +65,13 @@ productController.updateProduct = async (req, res) => {
   try {
     // 수정할 상품의 id 값
     const productId = req.params.id;
-    const {sku, name, image, category, description, price, stock, status} = req.body;
+    const {sku, name, images, category, description, price, stock, status} = req.body;
     // id 값과 일치하는 상품
     // 수정할 내용,
     // 업데이트한 후 새로운 값 리턴하는 옵션 => { new : true }
     const product = await Product.findByIdAndUpdate(
       { _id:productId }, 
-      { sku, name, image, category, description, price, stock, status },
+      { sku, name, images, category, description, price, stock, status },
       { new : true }
     );
     res.status(200).json({ status : 'success', data : product });

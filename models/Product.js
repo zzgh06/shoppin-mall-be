@@ -11,9 +11,9 @@ const productSchema = schema(
       type : String,
       required : true,
     },
-    image : {
-      type : String,
-      required : true,
+    images: { 
+      type: Array,
+      required: true,
     },
     category : {
       type : Array,
