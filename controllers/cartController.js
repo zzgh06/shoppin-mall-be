@@ -16,11 +16,13 @@ cartController.addItemToCart = async (req, res) => {
     // 이미 카트에 들어가 있는 아이템이냐? productId, size
     const existItem = cart.items.find((item) =>
       // equals 오브젝트 안의 요소를 비교할 때 사용
-      item.productId.equals(productId && item.size === size)
+      // equals 메서드는 productId와 size를 모두 비교할 수 없음
+      // productId 비교를 먼저 한 후, size를 비교하는 두 개의 조건으로 분리
+      item.productId.equals(productId) && item.size === size
     );
     if (existItem) {
       // 그렇다면 에러 ('이미 아이템이 카트에 있습니다')
-      throw new Error('동일한 상품이 이미 카트에 담겨져 있습니다.')
+      return res.status(400).json({ status: 'fail', error: '동일한 상품이 이미 카트에 담겨져 있습니다.' });
     };
     // 카트에 아이템을 추가
     cart.items = [...cart.items, {productId, size, qty}];
