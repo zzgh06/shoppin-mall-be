@@ -104,9 +104,21 @@ cartController.editCartItem = async (req, res) => {
     // 있으면 qty 변경
     cart.items[index].qty = qty;
     await cart.save();
-    res.status(200).json({ status: "success", data: cart.items });
+    res.status(200).json({ status: "success", data: cart.items.length });
   } catch (error) {
     return res.status(400).json({ status: "fail", error: error.message });
   }
 };
+
+cartController.getCartQty = async (req, res) => {
+  try {
+    const { userId } = req;
+    const cart = await Cart.findOne({ userId: userId });
+    if (!cart) throw new Error("고객님을 위한 카트가 없습니다");
+    res.status(200).json({ status: 200, qty: cart.items.length });
+  } catch (error) {
+    return res.status(400).json({ status: "fail", error: error.message });
+  }
+};
+
 module.exports = cartController;
