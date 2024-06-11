@@ -50,12 +50,12 @@ orderSchema.methods.toJSON = function () {
 };
 
 // 오더가 save 되면 카트가 알아서 비워짐
-orderSchema.post("save", async function (){
-  // 카트를 비워주자
-  const cart = await Cart.findOne({userId:this.userId})
-  cart.items = [];
-  await cart.save();
-})
+// orderSchema.post("save", async function (){
+//   // 카트를 비워주자
+//   const cart = await Cart.findOne({userId:this.userId})
+//   cart.items = [];
+//   await cart.save();
+// })
 
 const Order = mongoose.model("Order", orderSchema);
 module.exports = Order;
