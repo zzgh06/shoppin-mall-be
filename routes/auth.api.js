@@ -5,4 +5,7 @@ const router = express.Router();
 // 로그인
 router.post('/login', authController.loginWithEmail);
 
+// 구글 로그인
+router.post('/google', authController.googleLogin);
+
 module.exports = router;
