@@ -1,11 +1,10 @@
 const Product = require("../models/Product");
+const User = require("../models/User");
 const PAGE_SIZE = 5;
 const productController = {};
 productController.createProduct = async (req, res) => {
   try {
-    const { sku, name, images, category, description, price, stock, status } =
-      req.body;
-    const product = new Product({
+    const {
       sku,
       name,
       images,
@@ -14,6 +13,20 @@ productController.createProduct = async (req, res) => {
       price,
       stock,
       status,
+      gender,
+    } = req.body;
+    const product = new Product({
+      sku,
+      name,
+      images,
+      gender,
+      category,
+      description,
+      price,
+      stock,
+      status,
+      likes: 0,
+      purchases: 0,
     });
     await product.save();
     res.status(200).json({ status: "success", product });
@@ -111,7 +124,6 @@ productController.checkItemListStock = async (itemList) => {
       return map;
     }, {});
 
-
     // 불러온 상품 정보에서 해당 사이즈의 갯수가 qty 보다 적다면 에러를 리턴
     const insufficientStockItems = itemList
       .filter((item) => {
@@ -134,23 +146,56 @@ productController.checkItemListStock = async (itemList) => {
 };
 
 // 재고 감소
-productController.deductItemStock = async (itemList) => {
+// productController.deductItemStock = async (itemList) => {
+//   try {
+//     await Promise.all(
+//       itemList.map(async (item) => {
+//         const product = await Product.findById(item.productId);
+//         if (!product) {
+//           throw new Error(
+//             `ID에 해당하는 제품을 찾을 수 없습니다: ${item.productId}`
+//           );
+//         }
+//         product.stock[item.size] -= item.qty;
+//         // product.purchases += item.qty;
+//         return product.save();
+//       })
+//     );
+//   } catch (error) {
+//     throw new Error("제품 재고 업데이트에 실패했습니다.");
+//   }
+// };
+
+// 좋아요 기능 추가 및 취소
+productController.toggleLikeProduct = async (req, res) => {
   try {
-    await Promise.all(
-      itemList.map(async (item) => {
-        const product = await Product.findById(item.productId);
-        if (!product) {
-          throw new Error(
-            `ID에 해당하는 제품을 찾을 수 없습니다: ${item.productId}`
-          );
-        }
-        product.stock[item.size] -= item.qty;
-        return product.save();
-      })
-    );
+    const productId = req.params.id;
+    const userId = req.userId;
+
+    const user = await User.findById(userId);
+    const product = await Product.findById(productId);
+
+    const alreadyLiked = req.alreadyLiked;
+
+    if (alreadyLiked) {
+      product.likes -= 1;
+      await product.save();
+
+      user.likedProducts.pull(productId);
+      await user.save();
+    } else {
+      product.likes += 1;
+      await product.save();
+
+      user.likedProducts.push(productId);
+      await user.save();
+
+      }
+    res.status(200).json({ status: "success" });
   } catch (error) {
-    throw new Error("제품 재고 업데이트에 실패했습니다.");
+    res.status(400).json({ status: "fail", error: error.message });
   }
 };
+
 
 module.exports = productController;

@@ -3,6 +3,7 @@ const Order = require("../models/Order");
 const { randomStringGenerator } = require("../utils/randomStringGenerator");
 const productController = require("./product.controller");
 const { model } = require("mongoose");
+const Product = require("../models/Product");
 const PAGE_SIZE = 5;
 const orderController = {};
 orderController.createOrder = async (req, res) => {
@@ -24,8 +25,22 @@ orderController.createOrder = async (req, res) => {
     }
 
     // 재고가 충분할 경우, 재고 감소
-    await productController.deductItemStock(orderList);
+    // await productController.deductItemStock(orderList);
 
+    // 재고가 충분할 경우, 재고 감소 및 구매 수 증가
+    for (const item of orderList) {
+      const product = await Product.findById(item.productId);
+      if (!product) {
+        throw new Error(`상품을 찾을 수 없습니다: ${item.productId}`);
+      }
+      const newStock = { ...product.stock };
+      newStock[item.size] -= item.qty;
+      const newPurchases = product.purchases + item.qty;
+      await Product.findByIdAndUpdate(item.productId, {
+        stock: newStock,
+        purchases: newPurchases,
+      });
+    }
     // order 생성
     const newOrder = new Order({
       userId,
@@ -45,9 +60,17 @@ orderController.createOrder = async (req, res) => {
 
 orderController.getOrder = async (req, res) => {
   try {
+    const { userId, userLevel } = req;
     const { page, orderNum } = req.query;
 
+    // console.log("User ID:", userId);
+    // console.log("User Level:", userLevel);
+
+    // 조건 추가: 현재 사용자의 레벨을 확인하여 조건 설정
     let cond = {};
+    if (userLevel !== "admin") {
+      cond.userId = userId;
+    }
     if (orderNum) {
       cond = {
         orderNum: { $regex: orderNum, $options: "i" },
@@ -69,7 +92,7 @@ orderController.getOrder = async (req, res) => {
       .skip((page - 1) * PAGE_SIZE)
       .limit(PAGE_SIZE);
 
-    const totalItemNum = await Order.find(cond).count();
+    const totalItemNum = await Order.countDocuments(cond);
     const totalPageNum = Math.ceil(totalItemNum / PAGE_SIZE);
     res.status(200).json({ status: "success", data: orderList, totalPageNum });
   } catch (error) {

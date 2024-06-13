@@ -7,7 +7,7 @@ const orderController = require("../controllers/order.controller");
 router.post("/", authController.authenticate, orderController.createOrder);
 
 // 내 주문 정보 가져오기
-router.get("/me", authController.authenticate, orderController.getOrder);
+router.get("/me", authController.authenticate, authController.attachUserLevel, orderController.getOrder);
 
 // 주문서 상태 변경
 router.put(

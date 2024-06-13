@@ -84,6 +84,19 @@ authController.authenticate = async (req, res, next) => {
   }
 };
 
+// user level 확인
+authController.attachUserLevel = async (req, res, next) => {
+  try {
+    const userId = req.userId;
+    const user = await User.findById(userId);
+    if (!user) throw new Error("User not found");
+    req.userLevel = user.level;
+    next();
+  } catch (error) {
+    res.status(400).json({ status: "fail", error: error.message });
+  }
+};
+
 // 관리자 권한 확인
 authController.checkAdminPermission = async (req, res, next) => {
   try {
