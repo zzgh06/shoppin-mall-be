@@ -19,9 +19,17 @@ const userSchema = schema(
       type: String,
       required: true,
     },
+    isAdmin: {
+      type: Boolean,
+      default: false,
+    },
     level: {
       type: String,
       default: "customer",
+    },
+    totalPurchases: {
+      type: Number,
+      default: 0,
     },
     likedProducts: [{ type: schema.Types.ObjectId, ref: "Product" }],
   },
@@ -45,6 +53,34 @@ userSchema.methods.generateToken = function () {
   });
   return token;
 };
+
+// 등급 및 할인률 계산 함수
+userSchema.methods.calculateLevelAndDiscount = function () {
+  let level = "customer";
+  let discountRate = 0.03;
+
+  if (this.isAdmin) {
+    level = "admin";
+    // 할인율을 적용하지 않음
+    discountRate = 0;
+  } else if (this.totalPurchases > 1000000) {
+    level = "gold";
+    discountRate = 0.10;
+  } else if (this.totalPurchases > 500000) {
+    level = "silver";
+    discountRate = 0.07;
+  } else if (this.totalPurchases > 300000) {
+    level = "bronze";
+    discountRate = 0.05;
+  } else if (this.totalPurchases > 100000) {
+    level = "customer";
+    discountRate = 0.03;
+  }
+
+  this.level = level;
+  return discountRate;
+};
+
 
 const User = mongoose.model("User", userSchema);
 module.exports = User;

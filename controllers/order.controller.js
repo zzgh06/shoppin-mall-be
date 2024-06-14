@@ -1,10 +1,12 @@
 const { populate } = require("dotenv");
+const { model } = require("mongoose");
 const Order = require("../models/Order");
+const User = require("../models/User");
+const Product = require("../models/Product");
 const { randomStringGenerator } = require("../utils/randomStringGenerator");
 const productController = require("./product.controller");
-const { model } = require("mongoose");
-const Product = require("../models/Product");
 const PAGE_SIZE = 5;
+
 const orderController = {};
 orderController.createOrder = async (req, res) => {
   try {
@@ -41,10 +43,20 @@ orderController.createOrder = async (req, res) => {
         purchases: newPurchases,
       });
     }
+
+    // 사용자의 총 구매 금액 업데이트 및 할인률 계산
+    const user = await User.findById(userId);
+    user.totalPurchases += totalPrice;
+    const discountRate = user.calculateLevelAndDiscount();
+    await user.save();
+
+    // 할인 적용된 총 금액 계산
+    const discountedTotalPrice = totalPrice * (1 - discountRate);
+
     // order 생성
     const newOrder = new Order({
       userId,
-      totalPrice,
+      totalPrice: discountedTotalPrice,
       shipTo,
       contact,
       items: orderList,
