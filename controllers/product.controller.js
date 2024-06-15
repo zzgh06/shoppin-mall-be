@@ -38,26 +38,18 @@ productController.createProduct = async (req, res) => {
 productController.getProducts = async (req, res) => {
   try {
     const { page, name } = req.query;
-    // console.log(name)
-    // isDeleted 에 따라 보여주는 결과가 다름
     const cond = name
       ? { name: { $regex: name, $options: "i" }, isDeleted: false }
       : { isDeleted: false };
-    // 선언
     let query = Product.find(cond);
-    // 페이지 혹은 조건에 따라서 response로 전달할 데이터를 동적으로 변경
     let response = { status: "success" };
     if (page) {
       query.skip((page - 1) * PAGE_SIZE).limit(PAGE_SIZE);
-      // 최종 몇개 페이지 : 전체페이지개수 = 전체 데이터 개수 / 페이지 사이즈
       const totalItemNumber = await Product.find(cond).count();
       const totalPageNumber = Math.ceil(totalItemNumber / PAGE_SIZE);
-      // 총 페이지 데이터
       response.totalPageNumber = totalPageNumber;
     }
-    // 실행
     const productList = await query.exec();
-    // 상품데이터
     response.data = productList;
     res.status(200).json(response);
   } catch (error) {
@@ -77,13 +69,9 @@ productController.getProductById = async (req, res) => {
 
 productController.updateProduct = async (req, res) => {
   try {
-    // 수정할 상품의 id 값
     const productId = req.params.id;
     const { sku, name, images, category, description, price, stock, status } =
       req.body;
-    // id 값과 일치하는 상품
-    // 수정할 내용,
-    // 업데이트한 후 새로운 값 리턴하는 옵션 => { new : true }
     const product = await Product.findByIdAndUpdate(
       { _id: productId },
       { sku, name, images, category, description, price, stock, status },
@@ -95,8 +83,6 @@ productController.updateProduct = async (req, res) => {
   }
 };
 
-// 삭제(isDeleted : true) 변경, 실제로 삭제 X
-// isDeleted bool 에 따라 보여주는 item 변경
 productController.deleteProduct = async (req, res) => {
   try {
     const productId = req.params.id;
@@ -113,18 +99,13 @@ productController.deleteProduct = async (req, res) => {
 // 재고 확인
 productController.checkItemListStock = async (itemList) => {
   try {
-    // orderList 에 있는 주문한 상품정보에서 _id 기준으로 productId와 일치하는 상품정보들을 모두 불러온다.
     const products = await Product.find({
       _id: { $in: itemList.map((item) => item.productId) },
     });
-
-    // 상품 정보를 맵으로 변환, 키는 상품 ID, 값은 상품 객체, Map을 활용해서 빠른 검색 가능
     const productMap = products.reduce((map, product) => {
       map[product._id] = product;
       return map;
     }, {});
-
-    // 불러온 상품 정보에서 해당 사이즈의 갯수가 qty 보다 적다면 에러를 리턴
     const insufficientStockItems = itemList
       .filter((item) => {
         const product = productMap[item.productId];
@@ -144,27 +125,6 @@ productController.checkItemListStock = async (itemList) => {
     throw new Error("재고 확인 중 오류가 발생했습니다.");
   }
 };
-
-// 재고 감소
-// productController.deductItemStock = async (itemList) => {
-//   try {
-//     await Promise.all(
-//       itemList.map(async (item) => {
-//         const product = await Product.findById(item.productId);
-//         if (!product) {
-//           throw new Error(
-//             `ID에 해당하는 제품을 찾을 수 없습니다: ${item.productId}`
-//           );
-//         }
-//         product.stock[item.size] -= item.qty;
-//         // product.purchases += item.qty;
-//         return product.save();
-//       })
-//     );
-//   } catch (error) {
-//     throw new Error("제품 재고 업데이트에 실패했습니다.");
-//   }
-// };
 
 // 좋아요 기능 추가 및 취소
 productController.toggleLikeProduct = async (req, res) => {
@@ -189,13 +149,11 @@ productController.toggleLikeProduct = async (req, res) => {
 
       user.likedProducts.push(productId);
       await user.save();
-
-      }
+    }
     res.status(200).json({ status: "success" });
   } catch (error) {
     res.status(400).json({ status: "fail", error: error.message });
   }
 };
-
 
 module.exports = productController;

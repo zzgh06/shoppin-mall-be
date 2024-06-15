@@ -45,8 +45,7 @@ userSchema.methods.toJSON = function () {
   return obj;
 };
 
-// jwt.sign(payload, secretOrPrivateKey, [옵션, 콜백])
-// payload 와 secretOrPrivateKey 를 조합해서 토큰 값 생성
+// 토큰 값 생성
 userSchema.methods.generateToken = function () {
   const token = jwt.sign({ _id: this._id }, JWT_SECRET_KEY, {
     expiresIn: "1d",
@@ -61,7 +60,6 @@ userSchema.methods.calculateLevelAndDiscount = function () {
 
   if (this.isAdmin) {
     level = "admin";
-    // 할인율을 적용하지 않음
     discountRate = 0;
   } else if (this.totalPurchases > 1000000) {
     level = "gold";
